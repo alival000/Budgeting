@@ -10,6 +10,10 @@ h1 {
   font-size: 25px;
 }
 
+h1 .subheader {
+  font-size: 20px;
+}
+
 h2 {
 
 }
