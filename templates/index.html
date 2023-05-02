@@ -6,6 +6,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="/static/js/last_statement_pie.js"></script>
+    <script type="text/javascript" src="/static/js/tabs.js"></script>
 </head>
 
 <body>
@@ -77,8 +81,38 @@
         </div>
 
         <div class="large-widget">
-            test2
+            <div class="chart-border">
+                <div class="google-chart" id="last_statement_pie"></div>
+            </div>
         </div>
+
+        <div class="extra-large-widget">
+            <div class="tab">
+              <button class="tablinks" onclick="openCategory(event, 'London')" id="default">London</button>
+              <button class="tablinks" onclick="openCategory(event, 'Paris')">Paris</button>
+              <button class="tablinks" onclick="openCategory(event, 'Tokyo')">Tokyo</button>
+            </div>
+
+            <!-- Tab content -->
+            <div id="London" class="tabcontent">
+              <h3>London</h3>
+              <p>London is the capital city of England.</p>
+            </div>
+
+            <div id="Paris" class="tabcontent">
+              <h3>Paris</h3>
+              <p>Paris is the capital of France.</p>
+            </div>
+
+            <div id="Tokyo" class="tabcontent">
+              <h3>Tokyo</h3>
+              <p>Tokyo is the capital of Japan.</p>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("default").click();
+        </script>
     </div>
 
 </body>
