@@ -2,6 +2,15 @@ google.charts.load('current', {'packages':['bar']});
 google.charts.setOnLoadCallback(drawChart);
 
 function drawChart() {
+
+var data_req = jQuery.ajax({
+    type: "GET",
+    url: "/last_month_comparison",
+    async: false
+});
+
+data_res = data_req.responseText;
+
 var data = google.visualization.arrayToDataTable([
   ['Category', 'Last Month', 'This Month'],
   ['Rent', 1000, 400],

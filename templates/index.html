@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
 
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="/static/js/last_statement_pie.js"></script>
     <script type="text/javascript" src="/static/js/last_month_comparison_bar.js"></script>
@@ -34,6 +35,7 @@
         <div class="large-widget">
             <h1>Overview <i class="subheader">- Currently Saved</i> </h1>
 
+            {% if overview_data %}
             <table>
                  <tr>
                      <th></th>
@@ -43,48 +45,49 @@
                  </tr>
                  <tr>
                      <td class="rh">Rent</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['rent'] }}</td>
+                     <td>{{ overview_data['Ian']['rent'] }}</td>
+                     <td>{{ overview_data['Total']['rent'] }}</td>
                  </tr>
                  <tr>
                      <td class="rh">Utilities</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['utilities'] }}</td>
+                     <td>{{ overview_data['Ian']['utilities'] }}</td>
+                     <td>{{ overview_data['Total']['utilities'] }}</td>
                  </tr>
                  <tr>
                      <td class="rh">Groceries</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['groceries'] }}</td>
+                     <td>{{ overview_data['Ian']['groceries'] }}</td>
+                     <td>{{ overview_data['Total']['groceries'] }}</td>
                  </tr>
                  <tr>
                      <td class="rh">Travel</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['travel'] }}</td>
+                     <td>{{ overview_data['Ian']['travel'] }}</td>
+                     <td>{{ overview_data['Total']['travel'] }}</td>
                  </tr>
                  <tr>
                      <td class="rh">Food</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['food'] }}</td>
+                     <td>{{ overview_data['Ian']['food'] }}</td>
+                     <td>{{ overview_data['Total']['food'] }}</td>
 
                  </tr>
                  <tr>
                      <td class="rh">Ian Savings</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['ian_savings'] }}</td>
+                     <td>{{ overview_data['Ian']['ian_savings'] }}</td>
+                     <td>{{ overview_data['Total']['ian_savings'] }}</td>
                  </tr>
                  <tr>
                      <td class="rh">Miscellaneous</td>
-                     <td>test</td>
-                     <td>test</td>
-                     <td>test</td>
+                     <td>{{ overview_data['Ali']['misc'] }}</td>
+                     <td>{{ overview_data['Ian']['misc'] }}</td>
+                     <td>{{ overview_data['Total']['misc'] }}</td>
                  </tr>
             </table>
+            {% endif %}
         </div>
 
         <div class="large-widget">
@@ -246,6 +249,7 @@
         <div class="large-widget">
 
         </div>
+</div>
 
 </body>
 
