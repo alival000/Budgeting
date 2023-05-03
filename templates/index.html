@@ -9,6 +9,7 @@
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="/static/js/last_statement_pie.js"></script>
+    <script type="text/javascript" src="/static/js/last_month_comparison_bar.js"></script>
     <script type="text/javascript" src="/static/js/tabs.js"></script>
 </head>
 
@@ -20,6 +21,12 @@
         </div>
         <div class="button">
             <a href="/import">Import</a>
+        </div>
+        <div class="button">
+            <a href="/deposit">Deposit</a>
+        </div>
+        <div class="button">
+            <a href="/monthly">Monthly</a>
         </div>
     </div>
 
@@ -85,7 +92,8 @@
                 <div class="google-chart" id="last_statement_pie"></div>
             </div>
         </div>
-
+    </div>
+    <div class="widget">
         <div class="extra-large-widget">
             <div class="tab">
               <button class="tablinks" onclick="openCategory(event, 'Rent')" id="default">Rent</button>
@@ -99,132 +107,145 @@
 
             </div>
 
-            <!-- Tab content -->
-            <div id="Rent" class="tabcontent">
-              <h1>Rent</h1>
 
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Rent</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
+            <div class="scrollable-table">
+                <!-- Tab content -->
+                <div id="Rent" class="tabcontent">
+                  <h1>Rent</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Rent</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Utilities" class="tabcontent">
+                    <h1>Utilities</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Groceries" class="tabcontent">
+                    <h1>Groceries</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Travel" class="tabcontent">
+                    <h1>Travel</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Food" class="tabcontent">
+                    <h1>Food</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Ian Savings" class="tabcontent">
+                    <h1>Ian Savings</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
+
+                <div id="Misc" class="tabcontent">
+                    <h1>Misc.</h1>
+
+                    <table>
+                         <tr>
+                             <th>Date</th>
+                             <th>Description</th>
+                             <th>Amount</th>
+                         </tr>
+                         <tr>
+                             <td>Groceries</td>
+                             <td>test</td>
+                             <td>test</td>
+                         </tr>
+                    </table>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <div id="Utilities" class="tabcontent">
-                <h1>Utilities</h1>
+    <script>
+        document.getElementById("default").click();
+    </script>
 
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
+<div class="widget">
+        <div class="large-widget">
+            <div class="chart-border">
+                <div class="google-chart" id="last_month_comparison_bar"></div>
             </div>
-
-            <div id="Groceries" class="tabcontent">
-                <h1>Groceries</h1>
-
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
-            </div>
-
-            <div id="Travel" class="tabcontent">
-                <h1>Travel</h1>
-
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
-            </div>
-
-            <div id="Food" class="tabcontent">
-                <h1>Food</h1>
-
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
-            </div>
-
-            <div id="Ian Savings" class="tabcontent">
-                <h1>Ian Savings</h1>
-
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
-            </div>
-
-            <div id="Misc" class="tabcontent">
-                <h1>Misc.</h1>
-
-                <table>
-                     <tr>
-                         <th>Date</th>
-                         <th>Description</th>
-                         <th>Amount</th>
-                     </tr>
-                     <tr>
-                         <td>Groceries</td>
-                         <td>test</td>
-                         <td>test</td>
-                     </tr>
-                </table>
-            </div>
-
         </div>
 
-        <script>
-            document.getElementById("default").click();
-        </script>
-    </div>
+        <div class="large-widget">
+
+        </div>
 
 </body>
 

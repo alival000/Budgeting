@@ -14,11 +14,21 @@ h1 .subheader {
   font-size: 20px;
 }
 
+form {
+  padding-left: 375px;
+  padding-top: 100px; 
+}
+
+input {
+  border: 1px; 
+  border-radius: 5px;
+}
 
 table {
   background-color: #F0F6F9;
   margin: auto;
   width: 95%;
+  height: 50%;
   border-radius: 10px;
 }
 
@@ -86,6 +96,7 @@ tr .odd {
   width: 100%;
   height: 300px;
   float: left;
+  padding-bottom: 20px; 
 }
 
 .extra-large-widget {
@@ -97,7 +108,6 @@ tr .odd {
   border-radius: 10px;
   margin-left: 5px;
   margin-right: 5px;
-  margin-top: 10px; 
 }
 
 .large-widget {
@@ -157,4 +167,8 @@ tr .odd {
 .tabcontent {
   display: none;
   padding: 6px 12px;
-} 
+}
+
+.scrollable-table {
+  overflow-y: scroll;
+}
