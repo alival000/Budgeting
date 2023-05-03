@@ -1,0 +1,4 @@
+flask
+postgres
+psycopg2
+python-dotenv

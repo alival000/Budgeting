@@ -1,7 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for
 import datetime
+import os
+import psycopg2
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+load_dotenv()
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+
+conn = psycopg2.connect(
+        host="localhost",
+        database="budgeting",
+        user='postgres',
+        password=os.environ['DB_PASSWORD'])
+conn.autocommit = True
 
 @app.route('/')
 def index():
@@ -43,4 +56,12 @@ def import_statement():
 
         new_file.close()
 
+    add_transactions(new_file)
+
     return redirect(url_for('index'))
+
+
+def add_transactions(filename):
+    cur = conn.cursor()
+
+    cur.close()
