@@ -12,7 +12,7 @@ var data_req = jQuery.ajax({
 data_res = data_req.responseText;
 
 var data = google.visualization.arrayToDataTable([
-  ['Category', 'Last Month', 'This Month'],
+  ['', 'Last Month', 'This Month'],
   ['Rent', 1000, 400],
   ['Utilities', 1170, 460],
   ['Groceries', 660, 1120],

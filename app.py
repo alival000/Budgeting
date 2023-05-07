@@ -4,6 +4,12 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 
+# -------- notes -------------------------------------------------------------
+
+'''
+    * statements are from the 14th to the 13th
+'''
+
 # -------- configuration -------------------------------------------------------------
 
 app = Flask(__name__)
@@ -51,6 +57,7 @@ def import_statement():
         file_path = r'statements\\' + file.filename
         new_file = open(file_path, 'x')
 
+
         for line in file:
             sanitized_line = str(line)
             # remove b'
@@ -63,11 +70,11 @@ def import_statement():
 
         new_file.close()
 
-    add_transactions(file_path)
+    to_be_reviewed = review_transactions(file_path)
 
     # TODO: delete saved file?
 
-    return redirect(url_for('index'))
+    return render_template("review_transactions.html", to_be_reviewed=to_be_reviewed)
 
 
 @app.route('/last_month_comparison', methods=['GET'])
@@ -75,26 +82,33 @@ def get_last_month_comparison_data():
     cur = conn.cursor()
 
     try:
-        sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date > g "
+        sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date >  "
 
         cur.execute(sql)
     except Exception as e:
-        print("Error inserting transaction: ", e)
+        print("Error getting last month comparison: ", e)
         cur.close()
         return
 
     cur.close()
     return {}
 
+
+@app.route('/recategorize_vendors', methods=['GET', 'POST'])
+def review_transactions():
+    print(request.form)
+    return redirect(url_for('index'))
+
 # -------- functions -------------------------------------------------------------
 
+
 def add_transactions(filename):
-    '''
+    """
     :param filename:
     :return: None
 
     adds transactions into database
-    '''
+    """
     cur = conn.cursor()
 
     file = open(filename, 'r')
@@ -125,10 +139,10 @@ def add_transactions(filename):
 
 
 def get_overview_data():
-    '''
+    """
     :return: list
     query data of overall savings for each person
-    '''
+    """
     cur = conn.cursor()
 
     try:
@@ -171,3 +185,65 @@ def get_overview_data():
         return
 
     cur.close()
+
+
+def review_transactions(file_path):
+    cur = conn.cursor()
+    to_be_categorized = {}
+
+    # open file
+    reviewed_file_path = 'reviewed-' + file_path
+
+    file = open(file_path, 'r')
+    reviewed_file = open(reviewed_file_path, 'x')
+
+    # query for each category
+    try:
+        sql = f"SELECT *" \
+              f"FROM categorized_vendors"
+
+        cur.execute(sql)
+        categorized_vendors = cur.fetchall()
+    except Exception as e:
+        print("Error when getting vendors: ", e)
+        cur.close()
+
+    index = 0
+    header = False
+    # go through each line and see if it has been categorized
+    for line in file:
+        if not header:
+            header = True
+            index += 1
+            continue
+
+        is_categorized = False
+        transaction_date, posted_date, description, category, trans_type, amount = line.split(',')
+
+        for vendor in categorized_vendors:
+            vendor_category, vendor_name = vendor[0], vendor[1]
+
+            if vendor_name in description:
+                category = vendor_category
+
+                # join and write to reviewed file
+                data = ','.join([transaction_date, posted_date, description, category, trans_type, amount])
+                reviewed_file.write(data)
+
+                is_categorized = True
+                break
+
+        # if not, add to dictionary: key: description [dict used to remove repeats
+        if not is_categorized:
+            to_be_categorized[description] = ''
+
+        index += 1
+
+    # close file
+    cur.close()
+    file.close()
+    reviewed_file.close()
+
+    print(to_be_categorized)
+    # return dictionary
+    return to_be_categorized

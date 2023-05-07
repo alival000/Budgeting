@@ -1,0 +1,62 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="nav">
+        <div class="title">
+            Budgeting
+        </div>
+        <div class="button">
+            <a href="/">Home</a>
+        </div>
+    </div>
+
+    <div class="widget">
+        <h1 class="non-widget">To Be Categorized</h1>
+        {% if not to_be_reviewed %}
+            <h2>Everything is categorized. Press submit to continue</h2>
+        {% else %}
+            <!-- [transaction_date, posted_date, description, category, trans_type, amount] -->
+            <table>
+                <form action="/recategorize_vendors" method='post'>
+                    <input class="form-button" type="submit" value="Submit">
+                    <tr>
+                        <th>Description</th>
+                        <th>Rename</th>
+                        <th>Category</th>
+                    </tr>
+                    {% for description, transaction in to_be_reviewed.items() %}
+                        <tr>
+                            <td>{{ description }}</td>
+                            <td>
+                                <input type="text" name="rename-{{ description }}">
+                            </td>
+                            <td>
+                                <select name="category-{{ description }}">
+                                  <option value="Rent">Rent</option>
+                                  <option value="Utilities">Utilities</option>
+                                  <option value="Groceries">Groceries</option>
+                                  <option value="Travel">Travel</option>
+                                  <option value="Food">Food</option>
+                                  <option value="Ian-Savings">Ian Savings</option>
+                                  <option value="Misc">Misc.</option>
+                                </select>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </form>
+            </table>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
