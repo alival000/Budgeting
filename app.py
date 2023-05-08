@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-import datetime
+import ast
 import os
 import psycopg2
 from dotenv import load_dotenv
@@ -57,7 +57,6 @@ def import_statement():
         file_path = r'statements\\' + file.filename
         new_file = open(file_path, 'x')
 
-
         for line in file:
             sanitized_line = str(line)
             # remove b'
@@ -65,8 +64,9 @@ def import_statement():
             # remove ,\n'
             sanitized_line = sanitized_line[:-4]
 
-            new_file.write(sanitized_line)
-            new_file.write('\n')
+            if 'AUTOMATIC PAYMENT' not in sanitized_line and 'Payment Thank You' not in sanitized_line:
+                new_file.write(sanitized_line)
+                new_file.write('\n')
 
         new_file.close()
 
@@ -74,7 +74,7 @@ def import_statement():
 
     # TODO: delete saved file?
 
-    return render_template("review_transactions.html", to_be_reviewed=to_be_reviewed)
+    return render_template("review_transactions.html", to_be_reviewed=to_be_reviewed, file_path=file_path)
 
 
 @app.route('/last_month_comparison', methods=['GET'])
@@ -82,9 +82,10 @@ def get_last_month_comparison_data():
     cur = conn.cursor()
 
     try:
-        sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date >  "
+        #sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date >  "
 
-        cur.execute(sql)
+       # cur.execute(sql)
+        pass
     except Exception as e:
         print("Error getting last month comparison: ", e)
         cur.close()
@@ -95,8 +96,77 @@ def get_last_month_comparison_data():
 
 
 @app.route('/recategorize_vendors', methods=['GET', 'POST'])
-def review_transactions():
-    print(request.form)
+def submit_transactions():
+    # send updated version to db
+    # send in reviewed and from form
+    cur = conn.cursor()
+
+    renames = {}
+    categories = {}
+    transactions = {}
+    for result in request.form:
+        if result == 'filepath':
+            continue
+
+        section = result.split('-')[0]
+        name = result.split('-')[1]
+
+        if section == 'rename':
+            renames[name] = request.form[result]
+        elif section == 'category':
+            categories[name] = request.form[result]
+        elif section == 'trans':
+            transactions[name] = request.form[result]
+
+    for name_key, new_name in renames.items():
+        if name_key == 'filepath':
+            continue
+
+        old_name = name_key[7:]
+        new_category = ''
+        new_transactions = []
+
+        for category_key, category in categories.items():
+            if old_name in category_key:
+                new_category = category
+                break
+
+        for trans_key, trans_lst in transactions.items():
+            if old_name in trans_key:
+                new_transactions = ast.literal_eval(trans_lst)
+                break
+
+        for transaction in new_transactions:
+            try:
+                sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
+                  f"type, amount) VALUES " \
+                      f"('{transaction[0]}', '{transaction[1]}', '{new_name}', '{new_category}', '{transaction[4]}', " \
+                      f"{transaction[5]})"
+
+                cur.execute(sql)
+            except Exception as e:
+                print("Error inserting updated transactions: ", e)
+                continue
+
+    file_path = 'reviewed-' + request.form['filepath']
+    reviewed_file = open(file_path)
+    for transaction in reviewed_file:
+        transaction_lst = transaction.split(',')
+        try:
+            sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
+                  f"type, amount) VALUES " \
+                  f"('{transaction_lst[0]}', '{transaction_lst[1]}', '{transaction_lst[2]}', '{transaction_lst[3]}', " \
+                  f"'{transaction_lst[4]}', {transaction_lst[5]})"
+
+            cur.execute(sql)
+        except Exception as e:
+            print("Error inserting transactions: ", e)
+            continue
+
+
+    # TODO: create balance triggers in db
+
+    cur.close()
     return redirect(url_for('index'))
 
 # -------- functions -------------------------------------------------------------
@@ -224,10 +294,8 @@ def review_transactions(file_path):
             vendor_category, vendor_name = vendor[0], vendor[1]
 
             if vendor_name in description:
-                category = vendor_category
-
                 # join and write to reviewed file
-                data = ','.join([transaction_date, posted_date, description, category, trans_type, amount])
+                data = ','.join([transaction_date, posted_date, vendor_name, vendor_category, trans_type, amount])
                 reviewed_file.write(data)
 
                 is_categorized = True
@@ -235,7 +303,9 @@ def review_transactions(file_path):
 
         # if not, add to dictionary: key: description [dict used to remove repeats
         if not is_categorized:
-            to_be_categorized[description] = ''
+            if description not in to_be_categorized:
+                to_be_categorized[description] = []
+            to_be_categorized[description].append([transaction_date, posted_date, description, category, trans_type, amount])
 
         index += 1
 
@@ -244,6 +314,5 @@ def review_transactions(file_path):
     file.close()
     reviewed_file.close()
 
-    print(to_be_categorized)
     # return dictionary
     return to_be_categorized

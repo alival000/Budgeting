@@ -51,7 +51,9 @@
                                 </select>
                             </td>
                         </tr>
+                        <input type="hidden" name="trans-{{ description }}" value="{{ transaction }}">
                     {% endfor %}
+                    <input type="hidden" name="filepath" value="{{ file_path }}">
                 </form>
             </table>
         {% endif %}
