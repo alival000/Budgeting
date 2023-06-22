@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Flask, render_template, request, redirect, url_for
 import ast
 import os
@@ -161,10 +163,58 @@ def submit_transactions():
             cur.execute(sql)
         except Exception as e:
             print("Error inserting transactions: ", e)
+            print(transaction_lst)
             continue
 
 
     # TODO: create balance triggers in db
+
+    # get all transactions with ids
+    try:
+        today = datetime.date.today()
+
+        sql = f"SELECT * FROM transactions WHERE created_on = date('{today}')"
+
+        cur.execute(sql)
+        all_transactions = cur.fetchall()
+    except Exception as e:
+        print("Error finding transactions: ", e)
+
+    cur.close()
+    return render_template("assign_cost.html", transactions=all_transactions)
+
+@app.route('/submit_payments', methods=['GET', 'POST'])
+def submit_payments():
+    cur = conn.cursor()
+
+    for breakdown, transaction in request.form.items():
+        print(transaction)
+        id, cost, assignment = transaction.split('_')
+        cost = float(cost)
+
+        ali_cost = 0
+        ian_cost = 0
+
+        # determine cost
+        if assignment == 'Ali':
+            ali_cost = cost
+        elif assignment == 'Ian':
+            ian_cost = cost
+        elif assignment == 'Both':
+            ali_cost = cost // 2
+            ian_cost = cost // 2
+        else:
+            ali_cost = cost * .75
+            ian_cost = cost * .25
+
+        # add each transaction split to cost breakdown table
+        try:
+            sql = f"INSERT INTO cost_breakdown VALUES " \
+                  f"({id}, {ali_cost}, {ian_cost})"
+
+            cur.execute(sql)
+        except Exception as e:
+            print("Error adding payment", e)
 
     cur.close()
     return redirect(url_for('index'))
@@ -258,6 +308,10 @@ def get_overview_data():
 
 
 def review_transactions(file_path):
+    """
+    :param file_path:
+    :return: to_be_categorized
+    """
     cur = conn.cursor()
     to_be_categorized = {}
 

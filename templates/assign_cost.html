@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="nav">
+        <div class="title">
+            Budgeting
+        </div>
+        <div class="button">
+            <a href="/">Home</a>
+        </div>
+    </div>
+
+    <div class="widget">
+        <h1 class="non-widget">Assign Cost</h1>
+        <!-- [transaction_date, posted_date, description, category, trans_type, amount] -->
+        <table>
+            <form action="/submit_payments" method='post'>
+                <input class="form-button" type="submit" value="Submit">
+                <tr>
+                    <th>Description</th>
+                    <th>Cost</th>
+                    <th>Breakdown</th>
+                </tr>
+                {% for transaction in transactions %}
+                <!-- (id, trans_date, post_date, description, cat, type, amount, memo, created_on) -->
+                    <tr>
+                        <td>{{ transaction[3] }}</td>
+                        <td>{{ transaction[6] }}</td>
+                        <td>
+                            <select name="{{ transaction[0] }}">
+                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Ali">Ali</option>
+                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Ian">Ian</option>
+                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Both">Both</option>
+                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Skew">Skew</option>
+                                </select>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </form>
+        </table>
+    </div>
+
+</body>
+
+</html>
