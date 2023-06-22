@@ -1,0 +1,82 @@
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="nav">
+        <div class="title">
+            Budgeting
+        </div>
+        <div class="button">
+            <a href="/">Home</a>
+        </div>
+    </div>
+
+    <div class="widget">
+        <h1 class="non-widget">Insert Transaction</h1>
+        <table>
+            <form action="/insert_transaction" method='post'>
+                <input class="form-button" type="submit" value="Submit">
+                <tr>
+                    <th>Transaction Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Memo</th>
+                    <th>Breakdown</th>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="date" name="transaction-date">
+                    </td>
+                    <td>
+                        <input type="text" name="description">
+                    </td>
+                    <td>
+                        <select name="category">
+                          <option value="Rent">Rent</option>
+                          <option value="Utilities">Utilities</option>
+                          <option value="Groceries">Groceries</option>
+                          <option value="Travel">Travel</option>
+                          <option value="Food">Food</option>
+                          <option value="Ian-Savings">Ian Savings</option>
+                          <option value="Misc">Misc.</option>
+                          <option value="Vacation">Vacation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="type">
+                          <option value="Sale">Sale</option>
+                          <option value="Deposit">Deposit</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" step="any" name="amount">
+                    </td>
+                    <td>
+                        <input type="text" name="memo">
+                    </td>
+                    <td>
+                        <select name="breakdown">
+                              <option value="Ali">Ali</option>
+                              <option value="Ian">Ian</option>
+                              <option value="Both">Both</option>
+                              <option value="Skew">Skew</option>
+                            </select>
+                    </td>
+                </tr>
+            </form>
+        </table>
+    </div>
+
+</body>
+
+</html>

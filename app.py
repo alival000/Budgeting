@@ -47,6 +47,11 @@ def deposit():
     return render_template('deposit.html')
 
 
+@app.route('/insert')
+def insert():
+    return render_template('insert.html')
+
+
 @app.route('/monthly')
 def monthly_breakdown():
     return render_template('monthly.html')
@@ -183,13 +188,13 @@ def submit_transactions():
     cur.close()
     return render_template("assign_cost.html", transactions=all_transactions)
 
+
 @app.route('/submit_payments', methods=['GET', 'POST'])
 def submit_payments():
     cur = conn.cursor()
 
     for breakdown, transaction in request.form.items():
-        print(transaction)
-        id, cost, assignment = transaction.split('_')
+        trans_id, cost, assignment = transaction.split('_')
         cost = float(cost)
 
         ali_cost = 0
@@ -210,7 +215,7 @@ def submit_payments():
         # add each transaction split to cost breakdown table
         try:
             sql = f"INSERT INTO cost_breakdown VALUES " \
-                  f"({id}, {ali_cost}, {ian_cost})"
+                  f"({trans_id}, {ali_cost}, {ian_cost})"
 
             cur.execute(sql)
         except Exception as e:
@@ -218,6 +223,168 @@ def submit_payments():
 
     cur.close()
     return redirect(url_for('index'))
+
+
+@app.route('/add_money', methods=['GET', 'POST'])
+def add_money():
+    cur = conn.cursor()
+    results = {}
+
+    name = request.form['name']
+    results['Rent'] = float(request.form['Rent'])
+    results['Utilities'] = float(request.form['Utilities'])
+    results['Groceries'] = float(request.form['Groceries'])
+    results['Travel'] = float(request.form['Travel'])
+    results['Food'] = float(request.form['Food'])
+    results['Ian-Savings'] = float(request.form['Ian-Savings'])
+    results['Misc'] = float(request.form['Misc'])
+    results['Vacation'] = float(request.form['Vacation'])
+
+    today = datetime.date.today()
+    description = name + '-deposit'
+
+    for category in results:
+        # make transaction
+        try:
+            sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
+                  f"type, amount) VALUES " \
+                  f"('{today}', '{today}', '{description}', '{category}', 'deposit', " \
+                  f"{results[category]})"
+            cur.execute(sql)
+        except Exception as e:
+            print("Error when making deposit transaction: ", e)
+
+        # get id
+        try:
+            sql = f"SELECT id " \
+                  f"FROM transactions " \
+                  f"WHERE transaction_date = date('{today}') " \
+                  f"AND description = '{description}' " \
+                  f"AND category = '{category}'" \
+                  f"AND amount = {results[category]}"
+            cur.execute(sql)
+            trans_id = cur.fetchone()[0]
+        except Exception as e:
+            print("Error getting id: ", e)
+
+        # add cost breakdown
+        try:
+            if name == "Ali":
+                sql = f"INSERT INTO cost_breakdown VALUES " \
+                      f"({trans_id}, {results[category]}, 0)"
+            else:
+                sql = f"INSERT INTO cost_breakdown VALUES " \
+                      f"({trans_id}, 0, {results[category]})"
+
+            cur.execute(sql)
+        except Exception as e:
+            print("Error when adding to cost breakdown: ", e)
+
+    cur.close()
+    return redirect(url_for('index'))
+
+
+@app.route('/insert_transaction', methods=['GET', 'POST'])
+def insert_transaction():
+    transaction_date = request.form['transaction-date']
+    description = request.form['description']
+    category = request.form['category']
+    trans_type = request.form['type']
+    amount = float(request.form['amount'])
+    assignment = request.form['breakdown']
+
+    cur = conn.cursor()
+    trans_id = 0
+
+    try:
+        sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
+              f"type, amount) VALUES " \
+              f"('{transaction_date}', '{transaction_date}', '{description}', '{category}', '{trans_type}', " \
+              f"{amount})"
+        cur.execute(sql)
+    except Exception as e:
+        print('Error inserting transaction: ', e)
+
+    # get id
+    try:
+        sql = f"SELECT id " \
+              f"FROM transactions " \
+              f"WHERE transaction_date = date('{transaction_date}') " \
+              f"AND description = '{description}' " \
+              f"AND category = '{category}'" \
+              f"AND amount = {amount}"
+        cur.execute(sql)
+        trans_id = cur.fetchone()[0]
+    except Exception as e:
+        print("Error getting id: ", e)
+
+    # add to cost breakdown
+    try:
+        ali_cost = 0
+        ian_cost = 0
+
+        # determine cost
+        if assignment == 'Ali':
+            ali_cost = amount
+        elif assignment == 'Ian':
+            ian_cost = amount
+        elif assignment == 'Both':
+            ali_cost = amount // 2
+            ian_cost = amount // 2
+        else:
+            ali_cost = amount * .75
+            ian_cost = amount * .25
+
+        sql = f"INSERT INTO cost_breakdown VALUES " \
+              f"({trans_id}, {ali_cost}, {ian_cost})"
+
+        cur.execute(sql)
+    except Exception as e:
+        print('Error inserting cost breakdown: ', e)
+
+    cur.close()
+    return redirect(url_for('index'))
+
+
+@app.route('/last_statement_data', methods=['GET', 'POST'])
+def get_statement_data():
+    cur = conn.cursor()
+    today = datetime.date.today()
+    month = today.month
+    year = today.year
+
+    results = {
+        'Rent': 0,
+        'Groceries': 0,
+        'Utilities': 0,
+        'Travel': 0,
+        'Food': 0,
+        'Ian-Savings': 0,
+        'Misc': 0,
+        'Vacation': 0
+    }
+    totals = {}
+
+    # TODO: fix for january
+
+    try:
+        sql = f"SELECT category, (SUM(amount) * -1) as total " \
+              f"FROM transactions " \
+              f"WHERE transaction_date >= date('{str(year) + '-' +  str(month-1) + '-14' }') " \
+              f"AND transaction_date <= date('{str(year) + '-' + str(month) + '-13'}') " \
+              f"GROUP BY category"
+
+        cur.execute(sql)
+        totals = cur.fetchall()
+    except Exception as e:
+        print('Error getting statement data: ', e)
+
+    for tup in totals:
+        results[tup[0]] = float(tup[1])
+
+    cur.close()
+    return results
+
 
 # -------- functions -------------------------------------------------------------
 

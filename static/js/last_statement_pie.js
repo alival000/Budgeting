@@ -8,19 +8,25 @@ google.charts.setOnLoadCallback(drawChart);
 // instantiates the pie chart, passes in the data and
 // draws it.
 function drawChart() {
+var statement_data = $.ajax({
+        type: "POST",
+        url: "/last_statement_data",
+        async: false
+});
+console.log(statement_data['responseJSON'])
 
 // Create the data table.
 var data = new google.visualization.DataTable();
 data.addColumn('string', 'Topping');
 data.addColumn('number', 'Slices');
 data.addRows([
-  ['Rent', 3],
-  ['Utilities', 1],
-  ['Groceries', 1],
-  ['Travel', 1],
-  ['Food', 2],
-  ['Ian Savings', 1],
-  ['Misc.', 1],
+  ['Rent', statement_data['responseJSON']['Rent']],
+  ['Utilities', statement_data['responseJSON']['Utilities']],
+  ['Groceries', statement_data['responseJSON']['Groceries']],
+  ['Travel', statement_data['responseJSON']['Travel']],
+  ['Food', statement_data['responseJSON']['Food']],
+  ['Ian Savings', statement_data['responseJSON']['Ian-Savings']],
+  ['Misc.', statement_data['responseJSON']['Misc']],
 ]);
 
 // Set chart options
