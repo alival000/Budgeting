@@ -20,19 +20,19 @@ load_dotenv()
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 conn = psycopg2.connect(
-        host="localhost",
-        database="budgeting",
-        user='postgres',
-        password=os.environ['DB_PASSWORD'])
+    host="localhost",
+    database="budgeting",
+    user='postgres',
+    password=os.environ['DB_PASSWORD'])
 conn.autocommit = True
+
 
 # -------- endpoints -------------------------------------------------------------
 
 @app.route('/')
 def index():
     overview_data = get_overview_data();
-    #total_spending_data = get_total_spending_data();
-    #categorized_data = get_categorized_data();
+    # categorized_data = get_categorized_data();
 
     return render_template('index.html', overview_data=overview_data)
 
@@ -89,9 +89,9 @@ def get_last_month_comparison_data():
     cur = conn.cursor()
 
     try:
-        #sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date >  "
+        # sql = f"SELECT SUM(rent) as rent,  FROM transactions WHERE date >  "
 
-       # cur.execute(sql)
+        # cur.execute(sql)
         pass
     except Exception as e:
         print("Error getting last month comparison: ", e)
@@ -108,53 +108,46 @@ def submit_transactions():
     # send in reviewed and from form
     cur = conn.cursor()
 
-    renames = {}
-    categories = {}
-    transactions = {}
+    # create dictionary with the following structure
+    '''
+    {
+        old_name:{
+            rename:
+            category:
+            trans:
+        }
+    '''
+
+    # insert newly categorized transactions
+    data_mapping = {}
     for result in request.form:
         if result == 'filepath':
             continue
 
-        section = result.split('-')[0]
-        name = result.split('-')[1]
+        section, name = result.split('_')
 
-        if section == 'rename':
-            renames[name] = request.form[result]
-        elif section == 'category':
-            categories[name] = request.form[result]
-        elif section == 'trans':
-            transactions[name] = request.form[result]
+        if name not in data_mapping:
+            data_mapping[name] = {}
 
-    for name_key, new_name in renames.items():
-        if name_key == 'filepath':
-            continue
+        if section == 'trans':
+            data_mapping[name][section] = ast.literal_eval(request.form[result])
+        else:
+            data_mapping[name][section] = request.form[result]
 
-        old_name = name_key[7:]
-        new_category = ''
-        new_transactions = []
-
-        for category_key, category in categories.items():
-            if old_name in category_key:
-                new_category = category
-                break
-
-        for trans_key, trans_lst in transactions.items():
-            if old_name in trans_key:
-                new_transactions = ast.literal_eval(trans_lst)
-                break
-
-        for transaction in new_transactions:
+    for old_name, data in data_mapping.items():
+        for transaction in data['trans']:
             try:
                 sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
-                  f"type, amount) VALUES " \
-                      f"('{transaction[0]}', '{transaction[1]}', '{new_name}', '{new_category}', '{transaction[4]}', " \
-                      f"{transaction[5]})"
+                      f"type, amount) VALUES " \
+                      f"('{transaction[0]}', '{transaction[1]}', '{data['rename']}', '{data['category']}', " \
+                      f"'{transaction[4]}', {transaction[5]})"
 
                 cur.execute(sql)
             except Exception as e:
                 print("Error inserting updated transactions: ", e)
                 continue
 
+    # insert reviewed transactions
     file_path = 'reviewed-' + request.form['filepath']
     reviewed_file = open(file_path)
     for transaction in reviewed_file:
@@ -168,11 +161,7 @@ def submit_transactions():
             cur.execute(sql)
         except Exception as e:
             print("Error inserting transactions: ", e)
-            print(transaction_lst)
             continue
-
-
-    # TODO: create balance triggers in db
 
     # get all transactions with ids
     try:
@@ -186,6 +175,8 @@ def submit_transactions():
         print("Error finding transactions: ", e)
 
     cur.close()
+    reviewed_file.close()
+
     return render_template("assign_cost.html", transactions=all_transactions)
 
 
@@ -370,8 +361,9 @@ def get_statement_data():
     try:
         sql = f"SELECT category, (SUM(amount) * -1) as total " \
               f"FROM transactions " \
-              f"WHERE transaction_date >= date('{str(year) + '-' +  str(month-1) + '-14' }') " \
+              f"WHERE transaction_date >= date('{str(year) + '-' + str(month - 1) + '-14'}') " \
               f"AND transaction_date <= date('{str(year) + '-' + str(month) + '-13'}') " \
+              f"AND type = 'Sale' " \
               f"GROUP BY category"
 
         cur.execute(sql)
@@ -408,7 +400,7 @@ def add_transactions(filename):
             continue
 
         transaction_date, posted_date, description, category, trans_type, amount = line.split(',')
-        description = description.replace("'","")
+        description = description.replace("'", "")
 
         try:
             sql = f"INSERT INTO transactions (transaction_date, post_date, description, category, " \
@@ -433,7 +425,7 @@ def get_overview_data():
     cur = conn.cursor()
 
     try:
-        sql = f"SELECT * FROM balances ORDER BY name ASC"
+        sql = f"SELECT * FROM balance_totals ORDER BY name ASC"
 
         cur.execute(sql)
         res = cur.fetchall()
@@ -446,32 +438,51 @@ def get_overview_data():
         # format data to send to html
         for item in res:
             res_dict[item[0]] = {
-                'rent': float(item[1]),
-                'utilities': float(item[2]),
-                'groceries': float(item[3]),
-                'travel': float(item[4]),
-                'food': float(item[5]),
-                'ian_savings': float(item[6]),
-                'misc': float(item[7])
+                'rent': float(item[2]),
+                'utilities': float(item[3]),
+                'groceries': float(item[4]),
+                'travel': float(item[5]),
+                'food': float(item[6]),
+                'ian_savings': float(item[7]),
+                'misc': float(item[8]),
+                'vacation': float(item[9])
             }
 
         res_dict['Total'] = {
-            'rent': res_dict['Ali']['rent'] + res_dict['Ian']['rent'],
-            'utilities': res_dict['Ali']['utilities'] + res_dict['Ian']['utilities'],
-            'groceries': res_dict['Ali']['groceries'] + res_dict['Ian']['groceries'],
-            'travel': res_dict['Ali']['travel'] + res_dict['Ian']['travel'],
-            'food': res_dict['Ali']['food'] + res_dict['Ian']['food'],
-            'ian_savings': res_dict['Ali']['ian_savings'] + res_dict['Ian']['ian_savings'],
-            'misc': res_dict['Ali']['misc'] + res_dict['Ian']['misc']
+            'rent': round(res_dict['Ali']['rent'] + res_dict['Ian']['rent'], 2),
+            'utilities': round(res_dict['Ali']['utilities'] + res_dict['Ian']['utilities'], 2),
+            'groceries': round(res_dict['Ali']['groceries'] + res_dict['Ian']['groceries'], 2),
+            'travel': round(res_dict['Ali']['travel'] + res_dict['Ian']['travel'], 2),
+            'food': round(res_dict['Ali']['food'] + res_dict['Ian']['food'], 2),
+            'ian_savings': round(res_dict['Ali']['ian_savings'] + res_dict['Ian']['ian_savings'], 2),
+            'misc': round(res_dict['Ali']['misc'] + res_dict['Ian']['misc'], 2),
+            'vacation': round(res_dict['Ali']['vacation'] + res_dict['Ian']['vacation'], 2)
         }
 
+        res_dict['Each_Total'] = {
+            'Ali': 0,
+            'Ian': 0,
+            'Total': 0
+        }
+
+        for item in res_dict['Ali']:
+            res_dict['Each_Total']['Ali'] += res_dict['Ali'][item]
+        res_dict['Each_Total']['Ali'] = round(res_dict['Each_Total']['Ali'], 2)
+
+        for item in res_dict['Ian']:
+            res_dict['Each_Total']['Ian'] += res_dict['Ian'][item]
+        res_dict['Each_Total']['Ian'] = round(res_dict['Each_Total']['Ian'], 2)
+
+        for item in res_dict['Total']:
+            res_dict['Each_Total']['Total'] += res_dict['Total'][item]
+        res_dict['Each_Total']['Total'] = round(res_dict['Each_Total']['Total'], 2)
+
+        cur.close()
         return res_dict
     except Exception as e:
         print("Error when getting Overview Data: ", e)
         cur.close()
         return
-
-    cur.close()
 
 
 def review_transactions(file_path):
@@ -480,7 +491,6 @@ def review_transactions(file_path):
     :return: to_be_categorized
     """
     cur = conn.cursor()
-    to_be_categorized = {}
 
     # open file
     reviewed_file_path = 'reviewed-' + file_path
@@ -499,41 +509,46 @@ def review_transactions(file_path):
         print("Error when getting vendors: ", e)
         cur.close()
 
-    index = 0
+    # dictionary of the lines in the transactions file
+    transactions = {}
     header = False
-    # go through each line and see if it has been categorized
     for line in file:
         if not header:
             header = True
-            index += 1
             continue
 
-        is_categorized = False
-        transaction_date, posted_date, description, category, trans_type, amount = line.split(',')
+        transaction_date, posted_date, description, category, trans_type, amount, memo = line.split(',')
 
-        for vendor in categorized_vendors:
-            vendor_category, vendor_name = vendor[0], vendor[1]
+        if description not in transactions:
+            transactions[description] = []
+        transactions[description].append(
+            [transaction_date, posted_date, description, category, trans_type, amount, memo])
 
-            if vendor_name in description:
-                # join and write to reviewed file
-                data = ','.join([transaction_date, posted_date, vendor_name, vendor_category, trans_type, amount])
+    # dictionary of the vendors
+    vendors = {}
+    for vendor in categorized_vendors:
+        vendor_category, vendor_name = vendor[0], vendor[1]
+        vendors[vendor_name] = vendor_category
+
+    # loop through the vendors
+    for vendor in vendors:
+        # check to see if vendors is in transactions
+        matches = {description: trans_list for description, trans_list in transactions.items() if vendor in description}
+
+        # write them to reviewed file
+        for description in matches:
+            for transaction in matches[description]:
+                data = ','.join(transaction)
                 reviewed_file.write(data)
+            del transactions[description]
 
-                is_categorized = True
-                break
-
-        # if not, add to dictionary: key: description [dict used to remove repeats
-        if not is_categorized:
-            if description not in to_be_categorized:
-                to_be_categorized[description] = []
-            to_be_categorized[description].append([transaction_date, posted_date, description, category, trans_type, amount])
-
-        index += 1
-
-    # close file
     cur.close()
     file.close()
     reviewed_file.close()
 
-    # return dictionary
-    return to_be_categorized
+    # send back transactions that aren't categorized
+    print(transactions)
+    return transactions
+
+# def get_categorized_data():
+

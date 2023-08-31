@@ -37,9 +37,9 @@
                         <td>{{ transaction[6] }}</td>
                         <td>
                             <select name="{{ transaction[0] }}">
+                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Both">Both</option>
                                   <option value="{{ transaction[0] }}_{{ transaction[6] }}_Ali">Ali</option>
                                   <option value="{{ transaction[0] }}_{{ transaction[6] }}_Ian">Ian</option>
-                                  <option value="{{ transaction[0] }}_{{ transaction[6] }}_Both">Both</option>
                                   <option value="{{ transaction[0] }}_{{ transaction[6] }}_Skew">Skew</option>
                                 </select>
                         </td>
